@@ -757,8 +757,13 @@ function render() {
       if (typeof s.held !== "number") {
         controls += button("Aktion verwenden","use");
       }
-      if (s.mode === "") {
-        controls += button("Ablegen","discard","secondary");
+      if (["", "first", "second"].includes(s.mode)) {
+  controls += button(
+    s.mode === "first" ? "Keine verwenden – Zug abschließen" : "Ablegen",
+    "discard",
+    "secondary"
+  );
+}
       }
       if (s.mode === "first") {
         controls += button("Zweite Karte ziehen","second","secondary");
