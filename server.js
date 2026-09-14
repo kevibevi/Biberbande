@@ -251,7 +251,10 @@ function act(room, person, body) {
   }
 
   if (body.action === "discard") {
-    check(step === "held" && room.mode === "");
+    check(
+  step === "held" &&
+  ["", "first", "second"].includes(room.mode)
+);
 
     room.pile.push(room.held);
     done(room, person.name + " hat eine Karte abgelegt.");
@@ -263,7 +266,7 @@ function act(room, person, body) {
 
     room.pile.push(room.held);
     room.held = draw(room);
-    room.mode = "forced";
+    room.mode = "second";
     return;
   }
 
