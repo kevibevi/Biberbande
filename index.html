@@ -479,8 +479,10 @@ function playerHTML(person, index) {
   const cards = person.hand.map((value, cardIndex) => {
     const ownAction = mine && (
       (s.step === "held" && typeof s.held === "number") ||
-      s.step === "peek" || s.step === "swap"
+      s.step === "peek" ||
+      s.step === "swap"
     );
+
     const otherAction =
       !mine && s.step === "swap" && selection !== null;
 
@@ -492,30 +494,21 @@ function playerHTML(person, index) {
     );
   }).join("");
 
-  const hasHeld = turn && s.step === "held";
-
-  const held = hasHeld
-    ? card(mine ? s.held : null, `held:${index}`)
-    : `<div class="ghost" data-zone="held:${index}">＋</div>`;
-
   const status = s.phase === "setup"
     ? person.ready ? "✓" : "…"
     : turn ? " · Am Zug" : "";
 
   return `
-    <section class="player ${mine ? "mine" : ""} ${turn ? "active" : ""}"
+    <section
+      class="player ${mine ? "mine" : ""} ${turn ? "active" : ""}"
       data-player="${index}">
       <div class="player-head">
-        <strong>${escapeText(person.name)}${mine ? " · Du" : ""}</strong>
+        <strong>
+          ${escapeText(person.name)}${mine ? " · Du" : ""}
+        </strong>
         <span>${person.total} P. ${status}</span>
       </div>
-      <div class="hand-row">
-        ${cards}
-        <div class="held-slot">
-          ${held}
-          <div class="held-label">Gezogen</div>
-        </div>
-      </div>
+      <div class="hand-row">${cards}</div>
     </section>
   `;
 }
