@@ -223,6 +223,64 @@ summary{cursor:pointer;color:#d9eee8}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none!important}
 }
+  /* Vier eigene Karten; gezogene Karte liegt zentral. */
+.hand-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.table-middle {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-area {
+  width: 100%;
+  max-width: 650px;
+}
+
+.piles {
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.pile {
+  width: 90px;
+}
+
+.drawn-pile {
+  width: 105px;
+}
+
+.drawn-pile .card,
+.drawn-pile .ghost {
+  border: 2px solid #ffda91;
+  box-shadow: 0 0 25px #ffd68c30;
+}
+
+.drawn-pile p {
+  color: #ffe2aa;
+}
+
+.flight .card {
+  border-color: #ffe3a2;
+  box-shadow:
+    0 18px 40px #000a,
+    0 0 22px #ffd68c66;
+}
+
+@media (max-width: 600px) {
+  .piles {
+    gap: 18px;
+  }
+
+  .pile {
+    width: 70px;
+  }
+
+  .drawn-pile {
+    width: 82px;
+  }
+}
 </style>
 </head>
 
