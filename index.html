@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Biberabend · Gemeinsam spielen</title>
+
+<style>
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  color: #effbf6;
+  background: #091d24;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    linear-gradient(#071b2480, #071b24c9),
+    url("/biber.png") center / cover fixed;
+}
+
+button, input { font: inherit; }
+
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 18px;
+  background: #83efd0;
+  color: #103331;
+  font-weight: 750;
+  transition: transform .15s, filter .15s;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+button:disabled { opacity: .38; cursor: default; }
+button.secondary { background: #234650; color: #e2f5f1; }
+button.gold { background: #ffd68c; color: #4f3413; }
+
+button:focus-visible, input:focus-visible {
+  outline: 3px solid #ffda91;
+  outline-offset: 3px;
+}
+
+input {
+  width: 100%;
+  background: #0d2932;
+  border: 1px solid #426069;
+  border-radius: 12px;
+  padding: 14px;
+  color: white;
+  margin: 7px 0 16px;
+}
+
+label { display: block; color: #cae4df; font-size: 14px; }
+
+header {
+  max-width: 1080px;
+  margin: auto;
+  padding: 25px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand { font-size: 22px; font-weight: 850; letter-spacing: -1px; }
+.sub { color: #9cbcb8; font-size: 14px; }
+main { max-width: 1000px; margin: auto; padding: 0 18px 40px; }
+
+.welcome { max-width: 470px; margin: 7vh auto; padding: 30px; }
+
+.glass {
+  background: #0c2933eb;
+  border: 1px solid #416064;
+  border-radius: 22px;
+  box-shadow: 0 15px 60px #00141a50;
+}
+
+h1 {
+  font-size: 38px;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  margin: 12px 0;
+}
+
+p { color: #bdd5d0; line-height: 1.6; }
+
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row > * { flex-grow: 1; }
+.divider { border-top: 1px solid #35515a; margin: 24px 0; }
+
+.badge {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8aeace;
+}
+
+.code {
+  font-size: 38px;
+  font-weight: 850;
+  letter-spacing: 7px;
+  color: #ffd68c;
+  margin: 10px 0;
+}
+
+.lobby { max-width: 600px; margin: 5vh auto; padding: 28px; }
+
+.member {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #31505a;
+}
+
+.status {
+  padding: 17px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.status strong { display: block; font-size: 18px; }
+.status span { font-size: 14px; color: #c1d9d4; }
+
+.opponents {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.player {
+  padding: 16px;
+  border: 1px solid #3d5c65;
+  border-radius: 18px;
+  background: #102d36dd;
+  transition: box-shadow .3s;
+}
+
+.player.active {
+  border-color: #9effdd;
+  box-shadow: 0 0 22px #60efb32a;
+}
+
+.player.mine { max-width: 560px; margin: 16px auto; }
+
+.player-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.player-head strong { overflow-wrap: anywhere; }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+  perspective: 900px;
+}
+
+.card {
+  position: relative;
+  padding: 0;
+  aspect-ratio: 2 / 3;
+  min-width: 0;
+  border-radius: 10px;
+  background: repeating-linear-gradient(
+    45deg, #28565b 0 8px, #2e6163 8px 16px
+  );
+  border: 2px solid #73a7a3;
+  color: #d3f0df;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 5px 0 #031e27;
+  animation: deal .32s both;
+  overflow: hidden;
+}
+
+.card:disabled { opacity: 1; }
+
+.card .face {
+  font-size: clamp(24px, 5vw, 46px);
+  font-weight: 850;
+}
+
+.card .label {
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.1;
+  margin: 7px 2px;
+}
+
+.card .position {
+  position: absolute;
+  left: 6px;
+  top: 5px;
+  font-size: 12px;
+}
+
+.card.open {
+  background: linear-gradient(135deg, #fff2cf, #eed7a2);
+  border-color: #fff0c9;
+  color: #23443f;
+  animation: flip .35s both;
+}
+
+.card.action {
+  background: linear-gradient(145deg, #a2e7ee, #72adb9);
+  border-color: #c2f4ec;
+}
+
+.card.selected {
+  outline: 3px solid #ffd58b;
+  transform: translateY(-8px);
+}
+
+.table {
+  padding: 22px;
+  margin: 16px 0;
+  text-align: center;
+  background: #143c42e8;
+  border: 1px solid #4c7271;
+  border-radius: 22px;
+}
+
+.piles {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  align-items: center;
+  margin: 8px 0 22px;
+}
+
+.pile { width: 95px; }
+.pile .card, .held .card { width: 95px; }
+.pile p { font-size: 12px; margin: 10px 0 0; }
+.held { width: 95px; margin: 14px auto; animation: draw .35s; }
+.controls { justify-content: center; }
+.controls > * { flex-grow: 0; }
+
+.instruction {
+  min-height: 25px;
+  color: #edfbf6;
+  margin: 12px 0;
+  font-size: 16px;
+}
+
+.note { font-size: 14px; color: #a9c7c2; margin: 12px 0 0; }
+
+#notice {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  max-width: 92vw;
+  width: max-content;
+  background: #f5d292;
+  color: #402c18;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px #0008;
+  display: none;
+}
+
+details {
+  max-width: 700px;
+  margin: 22px auto;
+  color: #bad4cf;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+summary { cursor: pointer; color: #d9eee8; }
+.result { padding: 20px; margin: 16px 0; }
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #35545d;
+}
+
+@keyframes deal {
+  from { opacity: 0; translate: 0 15px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes flip {
+  from { transform: rotateY(90deg); }
+  to { transform: rotateY(0); }
+}
+
+@keyframes draw {
+  from { opacity: 0; transform: translateY(-30px) rotate(-8deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 550px) {
+  header { padding: 18px; }
+  .welcome { margin: 3vh auto; padding: 22px; }
+  h1 { font-size: 32px; }
+  .opponents {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .player { padding: 10px; }
+  .opponents .cards { gap: 4px; }
+  .opponents .card .face { font-size: 22px; }
+  .opponents .card .label { display: none; }
+  .player-head { flex-wrap: wrap; }
+  .status { padding: 14px; }
+  .status strong { font-size: 16px; }
+  .table { padding: 15px; }
+  .row button { padding: 12px; }
+  .code { font-size: 30px; }
+  .result-row { flex-wrap: wrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div>
+    <div class="brand">🦫 Biberabend</div>
+    <div class="sub">Euer Tisch. Eure Runde.</div>
+  </div>
+  <div id="connection" class="sub">2–6 Personen</div>
+</header>
+
+<main id="app"></main>
+<div id="notice" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+const app = document.getElementById("app");
+const connection = document.getElementById("connection");
+
+let credentials = null;
+let state = null;
+let busy = false;
+let polling = false;
+let selection = null;
+let noticeTimer;
+
+try {
+  credentials = JSON.parse(sessionStorage.getItem("biber-session"));
+} catch {}
+
+function escapeText(value) {
+  const entities = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  };
+
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    character => entities[character]
+  );
+}
+
+function notify(message) {
+  const notice = document.getElementById("notice");
+
+  notice.textContent = message;
+  notice.style.display = "block";
+
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => {
+    notice.style.display = "none";
+  }, 5000);
+}
+
+function remember() {
+  try {
+    if (credentials) {
+      sessionStorage.setItem(
+        "biber-session",
+        JSON.stringify(credentials)
+      );
+    } else {
+      sessionStorage.removeItem("biber-session");
+    }
+  } catch {}
+}
+
+async function post(path, data) {
+  const response = await fetch("/api/" + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    signal: AbortSignal.timeout(15000)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(result.error || "Anfrage fehlgeschlagen.");
+    error.status = response.status;
+    throw error;
+  }
+
+  return result;
+}
+
+function welcome() {
+  app.innerHTML = `
+    <section class="glass welcome">
+      <div class="badge">Ein kleiner Spieleabend</div>
+      <h1>Wer hat die<br>kleinsten Karten?</h1>
+      <p>
+        Erstelle einen Tisch oder setz dich mit einem
+        Lobbycode zu deinen Freunden.
+      </p>
+
+      <label for="name">Dein Name</label>
+      <input
+        id="name"
+        maxlength="20"
+        placeholder="Zum Beispiel Kevin"
+        autocomplete="nickname"
+      >
+
+      <button id="create">Tisch erstellen</button>
+
+      <div class="divider"></div>
+
+      <label for="code">Lobbycode</label>
+      <input
+        id="code"
+        maxlength="6"
+        placeholder="ABC234"
+        autocomplete="off"
+        style="text-transform:uppercase;letter-spacing:4px"
+      >
+
+      <button class="secondary" id="join">Mitspielen</button>
+
+      <p class="note">
+        Keine Anmeldung nötig. Lass diesen Tab offen,
+        um deinen Platz zu behalten.
+      </p>
+    </section>
+  `;
+
+  document.getElementById("code").value =
+    new URLSearchParams(location.search).get("raum") || "";
+
+  document.getElementById("create").onclick = () => enter("create");
+  document.getElementById("join").onclick = () => enter("join");
+}
+
+async function enter(kind) {
+  if (busy) return;
+  busy = true;
+
+  const name = document.getElementById("name").value.trim();
+  const code = document.getElementById("code").value;
+
+  app.querySelectorAll("button").forEach(b => b.disabled = true);
+
+  try {
+    const result = await post(kind, { name, code });
+
+    credentials = {
+      code: result.state.code,
+      token: result.token
+    };
+
+    remember();
+    state = result.state;
+    selection = null;
+    render();
+  } catch (error) {
+    notify(error.message);
+    app.querySelectorAll("button").forEach(b => b.disabled = false);
+  } finally {
+    busy = false;
+  }
+}
+
+function card(value, owner, index, enabled = false, selected = false) {
+  const special = value !== null && typeof value !== "number";
+
+  const icon =
+    value === null ? "🦫" :
+    typeof value === "number" ? value :
+    value === "Tausch" ? "⇄" :
+    value === "Spähen" ? "◉" : "2×";
+
+  const label =
+    value === null ? "BIBERABEND" :
+    special ? value : "PUNKTE";
+
+  return `
+    <button
+      class="card ${value !== null ? "open" : ""}
+        ${special ? "action" : ""} ${selected ? "selected" : ""}"
+      ${enabled ? "" : "disabled"}
+      data-owner="${owner}"
+      data-index="${index}"
+      aria-label="Karte ${index + 1}: ${escapeText(value ?? "verdeckt")}"
+    >
+      <span class="position">${index + 1}</span>
+      <span class="face">${icon}</span>
+      <span class="label">${escapeText(label)}</span>
+    </button>
+  `;
+}
+
+function playerHTML(person, index) {
+  const s = state;
+  const mine = index === s.me;
+  const turn = s.phase === "play" && index === s.turn;
+  const myTurn = s.phase === "play" && s.turn === s.me;
+
+  const cards = person.hand.map((value, cardIndex) => {
+    const ownAction =
+      mine && (
+        (s.step === "held" && typeof s.held === "number") ||
+        s.step === "peek" ||
+        s.step === "swap"
+      );
+
+    const opponentAction =
+      !mine && s.step === "swap" && selection !== null;
+
+    return card(
+      value,
+      index,
+      cardIndex,
+      myTurn && (ownAction || opponentAction),
+      mine && selection === cardIndex && s.step === "swap"
+    );
+  }).join("");
+
+  const status =
+    s.phase === "setup" ? (person.ready ? "✓" : "…") :
+    turn ? " · Am Zug" : "";
+
+  return `
+    <section class="player ${mine ? "mine" : ""} ${turn ? "active" : ""}">
+      <div class="player-head">
+        <strong>${escapeText(person.name)}${mine ? " · Du" : ""}</strong>
+        <span>${person.total} P. ${status}</span>
+      </div>
+      <div class="cards">${cards}</div>
+    </section>
+  `;
+}
+
+function button(label, action, style = "", disabled = false) {
+  return `
+    <button
+      class="${style}"
+      data-action="${action}"
+      ${disabled ? "disabled" : ""}
+    >${label}</button>
+  `;
+}
+
+function rules() {
+  return `
+    <details>
+      <summary>So wird gespielt</summary>
+      <p>
+        Merke dir zu Beginn deine beiden äußeren Karten.
+        Ziel: möglichst wenige Punkte. Ziehe eine Karte und
+        ersetze damit eine deiner verdeckten Karten oder wirf
+        sie ab. Eine Zahlenkarte vom Ablagestapel musst du einbauen.
+      </p>
+      <p>
+        <b>Spähen:</b> eine eigene Karte ansehen.
+        <b>Tausch:</b> eine eigene Karte verdeckt mit einer
+        fremden tauschen.
+        <b>Zweimal:</b> die erste Karte verwenden oder eine
+        zweite ziehen, die du verwenden musst.
+        Gezogene Sonderkarten werden aktiviert oder, wenn
+        erlaubt, abgelegt; du kannst sie nicht einbauen.
+      </p>
+      <p>
+        Nach deiner Aktion kannst du klopfen.
+        Dann haben alle anderen noch einen Zug.
+        Sonderkarten in der Auslage werden zur Wertung
+        durch gezogene Zahlenkarten ersetzt.
+        Ihr spielt so viele Runden, wie Personen mitspielen.
+        Die niedrigste Gesamtpunktzahl gewinnt.
+      </p>
+      <p>
+        Bei Verbindungsproblemen denselben Tab neu laden.
+        Bei einem Server-Neustart gehen die Lobbys verloren.
+      </p>
+    </details>
+  `;
+}
+
+function render() {
+  const s = state;
+  if (!s) return;
+
+  connection.textContent = "Lobby " + s.code;
+
+  if (s.phase === "lobby") {
+    const members = s.players.map((person, index) => `
+      <div class="member">
+        <strong>${escapeText(person.name)}</strong>
+        <span>${
+          index === 0 ? "Gastgeber" :
+          person.online ? "Bereit" : "Verbindung prüfen"
+        }</span>
+      </div>
+    `).join("");
+
+    app.innerHTML = `
+      <section class="glass lobby">
+        <div class="badge">Euer Lobbycode</div>
+        <div class="code">${s.code}</div>
+
+        <div class="row">
+          ${button("Einladung kopieren", "invite", "secondary")}
+        </div>
+
+        <p>
+          Teile den Code oder den Einladungslink.
+          Der Gastgeber startet, sobald alle da sind.
+        </p>
+
+        ${members}
+
+        <div style="margin-top:22px">
+          ${
+            s.me === 0
+              ? button("Spiel starten", "start", "", s.players.length < 2)
+              : "<p>Warte auf den Gastgeber …</p>"
+          }
+        </div>
+      </section>
+      ${rules()}
+    `;
+
+    bind();
+    return;
+  }
+
+  const mine = s.turn === s.me;
+  const me = s.players[s.me];
+  const over = ["result", "finished"].includes(s.phase);
+
+  let title = "";
+  let instruction = "";
+  let controls = "";
+  let held = "";
+  let result = "";
+
+  if (s.phase === "setup") {
+    title = "Runde " + s.round + " · Karten merken";
+
+    instruction = me.ready
+      ? "Warte, bis alle ihre Karten verdeckt haben."
+      : "Merke dir deine beiden äußeren Karten.";
+
+    if (!me.ready) {
+      controls = button("Gemerkt – Karten verdecken", "ready");
+    }
+  } else if (over) {
+    title = s.phase === "finished" ? "Partie beendet" : "Runde beendet";
+
+    const ranked = [...s.players].sort((a, b) => a.total - b.total);
+
+    const winners = ranked
+      .filter(person => person.total === ranked[0].total)
+      .map(person => person.name)
+      .join(" & ");
+
+    instruction = s.phase === "finished"
+      ? "Gewonnen: " + winners
+      : "Die Punkte dieser Runde sind gezählt.";
+
+    result = `
+      <section class="glass result">
+        ${ranked.map(person => `
+          <div class="result-row">
+            <strong>${escapeText(person.name)}</strong>
+            <span>
+              Runde: ${person.score} ·
+              Gesamt: <b>${person.total}</b>
+            </span>
+          </div>
+        `).join("")}
+      </section>
+    `;
+
+    controls = s.me === 0
+      ? button(
+          s.phase === "finished" ? "Neue Partie" : "Nächste Runde",
+          "next"
+        )
+      : "<p>Der Gastgeber startet die nächste Runde.</p>";
+  } else {
+    title = mine
+      ? "Du bist am Zug"
+      : s.players[s.turn].name + " ist am Zug";
+
+    if (!mine) {
+      instruction = "Warte auf den nächsten Spielzug.";
+    } else if (s.step === "draw") {
+      instruction = "Ziehe verdeckt oder nimm die offene Zahlenkarte.";
+
+      controls =
+        button("Karte ziehen", "draw") +
+        button(
+          "Ablage nehmen",
+          "take",
+          "secondary",
+          typeof s.top !== "number"
+        );
+    } else if (s.step === "held") {
+      held = `<div class="held">${card(s.held, -1, 0)}</div>`;
+
+      instruction = typeof s.held === "number"
+        ? "Wähle eine deiner vier Karten zum Ersetzen."
+        : "Aktiviere die Aktionskarte.";
+
+      if (typeof s.held !== "number") {
+        controls += button("Aktion verwenden", "use");
+      }
+
+      if (s.mode === "") {
+        controls += button("Ablegen", "discard", "secondary");
+      }
+
+      if (s.mode === "first") {
+        controls += button(
+          "Stattdessen zweite Karte ziehen",
+          "second",
+          "secondary"
+        );
+
+        instruction += " Oder ziehe die zweite Karte.";
+      }
+
+      if (s.mode === "forced") {
+        instruction += " Diese Karte musst du verwenden.";
+      }
+    } else if (s.step === "peek") {
+      instruction = "Tippe auf eine deiner Karten, um sie anzusehen.";
+    } else if (s.step === "reveal") {
+      instruction = "Merke dir die aufgedeckte Karte.";
+      controls = button("Wieder verdecken", "close");
+    } else if (s.step === "swap") {
+      instruction = selection === null
+        ? "Wähle zuerst eine deiner Karten."
+        : "Wähle jetzt die Karte eines Mitspielers.";
+    } else if (s.step === "end") {
+      instruction = "Fertig! Beende deinen Zug oder klopfe.";
+      controls = button("Zug beenden", "end");
+
+      if (s.knocker === null) {
+        controls += button("Klopfen ✊", "knock", "gold");
+      }
+    }
+  }
+
+  const finalInfo =
+    s.phase === "play" && s.knocker !== null
+      ? " · Letzte Züge: " + s.remaining
+      : "";
+
+  const opponents = s.players.map(
+    (person, index) => index === s.me ? "" : playerHTML(person, index)
+  ).join("");
+
+  app.innerHTML = `
+    <section class="glass status">
+      <div>
+        <strong>${escapeText(title)}</strong>
+        <span>
+          Runde ${s.round} / ${s.players.length}${finalInfo}
+        </span>
+      </div>
+      <span>${s.code}</span>
+    </section>
+
+    <div class="opponents">${opponents}</div>
+
+    ${result}
+
+    <section class="table">
+      <div class="piles">
+        <div class="pile">
+          ${card(null, -1, 0)}
+          <p>Nachziehstapel</p>
+        </div>
+        <div class="pile">
+          ${card(s.top, -1, 0)}
+          <p>Ablagestapel</p>
+        </div>
+      </div>
+
+      ${held}
+
+      <div class="instruction">${escapeText(instruction)}</div>
+      <div class="row controls">${controls}</div>
+      <p class="note">${escapeText(s.message)}</p>
+    </section>
+
+    ${playerHTML(me, s.me)}
+    ${rules()}
+  `;
+
+  bind();
+}
+
+function bind() {
+  app.querySelectorAll("[data-action]").forEach(element => {
+    element.onclick = () => {
+      if (element.dataset.action === "invite") {
+        const link = location.origin + "/?raum=" + state.code;
+
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(link)
+            .then(() => notify("Einladungslink kopiert!"))
+            .catch(() => notify("Lobbycode: " + state.code));
+        } else {
+          notify("Lobbycode: " + state.code);
+        }
+      } else {
+        send(element.dataset.action);
+      }
+    };
+  });
+
+  app.querySelectorAll(".card:not(:disabled)").forEach(element => {
+    element.onclick = () => {
+      if (busy) return;
+
+      const index = Number(element.dataset.index);
+      const owner = Number(element.dataset.owner);
+
+      if (state.step === "swap") {
+        if (owner === state.me) {
+          selection = index;
+          render();
+        } else if (selection !== null) {
+          send("swap", {
+            index: selection,
+            other: owner,
+            otherIndex: index
+          });
+        }
+      } else {
+        send(
+          state.step === "peek" ? "peek" : "replace",
+          { index }
+        );
+      }
+    };
+  });
+}
+
+function accept(nextState) {
+  if (!state || nextState.version >= state.version) {
+    const changed = !state || nextState.version !== state.version;
+
+    const presenceChanged = state &&
+      nextState.players.some(
+        (person, index) =>
+          person.online !== state.players[index]?.online
+      );
+
+    state = nextState;
+
+    if (changed) {
+      selection = null;
+      render();
+    } else if (presenceChanged && state.phase === "lobby") {
+      render();
+    }
+  }
+}
+
+async function send(action, extra = {}) {
+  if (busy) return;
+  busy = true;
+
+  app.querySelectorAll("button").forEach(b => b.disabled = true);
+
+  try {
+    const result = await post("action", {
+      ...credentials,
+      version: state.version,
+      request: crypto.randomUUID(),
+      action,
+      ...extra
+    });
+
+    accept(result.state);
+  } catch (error) {
+    notify(error.message);
+  } finally {
+    busy = false;
+    render();
+  }
+}
+
+async function poll() {
+  if (credentials && !busy && !polling) {
+    polling = true;
+    const session = credentials;
+
+    try {
+      const result = await post("state", session);
+
+      if (credentials === session) {
+        accept(result.state);
+        connection.textContent = "Lobby " + state.code + " · Verbunden";
+      }
+    } catch (error) {
+      if (credentials === session) {
+        if (error.status === 404 || error.status === 401) {
+          credentials = null;
+          state = null;
+          remember();
+          connection.textContent = "2–6 Personen";
+          welcome();
+          notify(error.message);
+        } else {
+          connection.textContent =
+            "Verbindung unterbrochen · Neuer Versuch …";
+        }
+      }
+    } finally {
+      polling = false;
+    }
+  }
+
+  setTimeout(poll, 1200);
+}
+
+if (credentials) {
+  app.innerHTML = `
+    <section class="glass welcome">
+      <h1>Zurück an den Tisch …</h1>
+      <p>Dein Spielstand wird geladen.</p>
+    </section>
+  `;
+} else {
+  welcome();
+}
+
+poll();
+</script>
+</body>
+</html>
