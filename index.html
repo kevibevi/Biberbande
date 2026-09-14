@@ -974,7 +974,7 @@ function changedHands(before, after) {
 }
 
 async function showEvent(event, generation) {
-  const duration = queue.length > 5 ? 190 : 520;
+  const duration = queue.length > 10 ? 1000 : 1450;
   const before = state;
 
   caption = eventText(event);
