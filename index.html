@@ -747,17 +747,44 @@ function render() {
 
     <section class="table">
       <div class="table-middle">
-        <div class="piles">
-          <div class="pile">
-            ${card(null,"deck",mine && s.phase === "play" && s.step === "draw")}
-            <p>Nachziehen</p>
-          </div>
-          <div class="pile">
-            ${card(s.top,"discard",mine && s.phase === "play" &&
-              s.step === "draw" && typeof s.top === "number")}
-            <p>Ablage</p>
-          </div>
-        </div>
+   <div class="piles">
+  <div class="pile">
+    ${card(
+      null,
+      "deck",
+      mine && s.phase === "play" && s.step === "draw"
+    )}
+    <p>Nachziehen</p>
+  </div>
+
+  <div class="pile drawn-pile">
+    ${
+      s.phase === "play" && s.step === "held"
+        ? card(mine ? s.held : null, "held:" + s.turn)
+        : `<div class="ghost" data-zone="held:${s.turn}">
+             <span>↓</span>
+           </div>`
+    }
+    <p>
+      <strong>Gezogene Karte</strong><br>
+      ${
+        s.phase === "play"
+          ? escapeText(s.players[s.turn].name)
+          : "Gemeinsamer Ziehplatz"
+      }
+    </p>
+  </div>
+
+  <div class="pile">
+    ${card(
+      s.top,
+      "discard",
+      mine && s.phase === "play" &&
+      s.step === "draw" && typeof s.top === "number"
+    )}
+    <p>Ablage</p>
+  </div>
+</div>
         <div class="action-area">
           <div class="eventline">${escapeText(caption)}</div>
           <div class="instruction">${escapeText(instruction)}</div>
