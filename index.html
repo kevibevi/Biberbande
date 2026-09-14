@@ -878,6 +878,7 @@ function cancelAnimations() {
 async function fly(move, duration, generation, delay = 0) {
   const from = zoneElement(move.from);
   const to = zoneElement(move.to);
+
   if (!from || !to || generation !== epoch) return;
 
   const start = from.getBoundingClientRect();
@@ -888,39 +889,55 @@ async function fly(move, duration, generation, delay = 0) {
   const element = document.createElement("div");
   element.className = "flight";
 
-  // Beim Ziehen fliegt die Rückseite. Nur der Besitzer
-  // bekommt anschließend die Vorderseite angezeigt.
-  const value = move.from === "deck" && move.to.startsWith("held:")
-    ? null : move.card;
+  const value =
+    move.from === "deck" && move.to.startsWith("held:")
+      ? null
+      : move.card;
 
   element.innerHTML = card(value);
+
   Object.assign(element.style, {
-    left:start.left + "px",
-    top:start.top + "px",
-    width:start.width + "px",
-    height:start.height + "px"
+    left: start.left + "px",
+    top: start.top + "px",
+    width: start.width + "px",
+    height: start.height + "px"
   });
 
   document.body.appendChild(element);
 
   try {
+    const middleWidth = Math.max(start.width, end.width, 110);
+    const middleHeight = Math.max(start.height, end.height, 165);
+
+    const middleX =
+      (start.left + start.width / 2 +
+       end.left + end.width / 2) / 2;
+
+    const middleY =
+      (start.top + start.height / 2 +
+       end.top + end.height / 2) / 2;
+
     await animateElement(element, [
       {
-        left:start.left + "px", top:start.top + "px",
-        width:start.width + "px", height:start.height + "px",
-        transform:"rotate(-4deg) scale(1)"
+        left: start.left + "px",
+        top: start.top + "px",
+        width: start.width + "px",
+        height: start.height + "px",
+        transform: "rotate(-3deg)"
       },
       {
-        left:(start.left + end.left)/2 + "px",
-        top:(start.top + end.top)/2 - 22 + "px",
-        width:(start.width + end.width)/2 + "px",
-        height:(start.height + end.height)/2 + "px",
-        transform:"rotate(5deg) scale(1.08)"
+        left: middleX - middleWidth / 2 + "px",
+        top: middleY - middleHeight / 2 - 55 + "px",
+        width: middleWidth + "px",
+        height: middleHeight + "px",
+        transform: "rotate(6deg)"
       },
       {
-        left:end.left + "px", top:end.top + "px",
-        width:end.width + "px", height:end.height + "px",
-        transform:"rotate(0deg) scale(1)"
+        left: end.left + "px",
+        top: end.top + "px",
+        width: end.width + "px",
+        height: end.height + "px",
+        transform: "rotate(0deg)"
       }
     ], duration, delay);
 
@@ -929,9 +946,34 @@ async function fly(move, duration, generation, delay = 0) {
     if (move.to.startsWith("hand:") && value !== null) {
       await animateElement(
         element.firstElementChild,
-        [{transform:"rotateY(0deg)"},{transform:"rotateY(90deg)"}],
-        duration * .2
+        [
+          {transform: "rotateY(0deg)"},
+          {transform: "rotateY(90deg)"}
+        ],
+        220
       );
+    }
+
+    if (generation !== epoch) return;
+
+    // Die Karte bleibt am Ziel sichtbar, auch wenn danach
+    // noch eine weitere Bewegung derselben Aktion folgt.
+    const landedValue = move.to.startsWith("hand:")
+      ? null
+      : move.card;
+
+    const holder = document.createElement("div");
+    holder.innerHTML = card(landedValue, move.to);
+
+    const currentTarget = zoneElement(move.to);
+    if (currentTarget) {
+      currentTarget.replaceWith(holder.firstElementChild);
+    }
+
+    element.remove();
+
+    if (!reducedMotion.matches) {
+      await new Promise(resolve => setTimeout(resolve, 240));
     }
   } finally {
     element.remove();
